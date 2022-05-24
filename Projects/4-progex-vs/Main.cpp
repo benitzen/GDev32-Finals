@@ -604,7 +604,7 @@ int main()
     // std::cin >> filepath;
     // std::cout << std::endl << filepath << std::endl;
 
-    filepath = "checkboard.test";
+    filepath = "scene2d.test";
     scenefile.open(filepath, std::ios::in);
     if (scenefile)
     {
