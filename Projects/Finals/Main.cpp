@@ -291,51 +291,41 @@ Ray GetRayThruPixel(const Camera &camera, const int &pixelX, const int &pixelY)
     Ray ray;
     ray.origin = camera.position;
 
-    // might be this one
-    // ray.direction = glm::normalize(glm::vec3(float(pixelX), float(pixelY), 0.0f));
-    // ray.direction = glm::normalize(glm::vec3(pixelX, pixelY, 0.0f));
-    // ray.direction = glm::normalize(camera.lookTarget - ray.origin);
-
+    // viewport calculations (slide 17)
     float aspectRatio = camera.imageWidth / (float)camera.imageHeight;
-
     float hViewport = 2 * camera.focalLength * tan((camera.fovY * M_PI / 180) / 2);
     float wViewport = aspectRatio * hViewport;
 
+    // vector u and vector v calculations (slide 19)
     glm::vec3 lookDirection = glm::normalize(camera.lookTarget - ray.origin);
     glm::vec3 upVector = glm::cross(lookDirection, camera.globalUp);
     glm::vec3 vVector = glm::cross(upVector, lookDirection);
 
-    // if (upVector.x != 0 && upVector.y != 0 && upVector.z != 0)
     if (upVector != glm::vec3(0.0f))
     {
-        // normalize
         upVector = glm::normalize(upVector);
     }
 
-    // if (vVector.x != 0 && vVector.y != 0 && vVector.z != 0)
     if (vVector != glm::vec3(0.0f))
     {
-        // normalize
         vVector = glm::normalize(vVector);
     }
 
-    glm::vec3 L = camera.position + lookDirection * camera.focalLength - upVector * (wViewport / 2) - vVector * (hViewport / 2);
+    // lower-left corner point L calculations
+    glm::vec3 L = camera.position + (lookDirection * camera.focalLength) - (upVector * (wViewport / 2)) - (vVector * (hViewport / 2));
 
-    float a = ((pixelX + 0.5) / camera.imageWidth) * wViewport;
-    float b = ((pixelY + 0.5) / camera.imageHeight) * hViewport;
-
-    glm::vec3 P = L + upVector * a + vVector * b;
-
+    // calculate ray going through pixel (x,y)
+    float s = ((pixelX + 0.5) / camera.imageWidth) * wViewport;
+    float t = ((pixelY + 0.5) / camera.imageHeight) * hViewport;
+    glm::vec3 P = L + upVector * s + vVector * t;
     glm::vec3 rayDirection = P - ray.origin;
 
     if (rayDirection != glm::vec3(0.0f))
     {
-        // normalize
         rayDirection = glm::normalize(rayDirection);
     }
 
     ray.direction = rayDirection;
-
     return ray;
 }
 
@@ -486,14 +476,14 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
         for (int j = 0; j < scene.objects.size(); j++)
         {
             shadow.origin = didRayHit.intersectionPoint + (didRayHit.intersectionNormal * 0.01f);
-            float lightType = scene.lights[i].position.w;
+            float lightW = scene.lights[i].position.w;
 
-            if (lightType == 0.0f)
+            if (lightW == 0.0f)
             {
                 /* code */
                 shadow.direction = glm::normalize(-glm::vec3(scene.lights[i].position));
             }
-            else if (lightType == 1.0f)
+            else if (lightW == 1.0f)
             {
                 /* code */
                 shadow.direction = glm::normalize(glm::vec3(scene.lights[i].position) - shadow.origin);
@@ -503,14 +493,19 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
             glm::vec3 outIntersectionNormal(0.0f);
 
             float rayDist = scene.objects[j]->Intersect(shadow, outIntersectionPoint, outIntersectionNormal);
-            // if (glm::length(lightDirection) > rayDist)
-            if (glm::length(lightDirection) > rayDist && rayDist > 0)
+            // In your shadow calculation, remember that directional lights do not have a position,
+            // so you cannot really measure the distance between the intersection point and the
+            // directional light. Also, you are getting the length of lightDirection, which if you
+            // notice is already normalized. Hence, it will always have a length of 1.
+            // if (glm::length(lightDirection) > rayDist && rayDist > 0)
+            if (rayDist < 1 && rayDist > 0)
             {
                 isShadow = true;
             }
         }
         if (isShadow)
         {
+            // std::cout << "shadow" << std::endl;
             shadowVal = 1.0f;
         }
         else
@@ -519,7 +514,7 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
             if (maxDepth > 0)
             {
                 Ray reflection;
-                reflection.origin = didRayHit.intersectionPoint + 0.001f; //(why is there 0.01f again?);
+                reflection.origin = didRayHit.intersectionPoint + (didRayHit.intersectionNormal * 0.001f);
                 reflection.direction = glm::reflect(didRayHit.incomingRay.direction, didRayHit.intersectionNormal);
                 float kr = didRayHit.obj->material.shininess / 128;
                 colorCombinedTemp += (kr * RayTrace(reflection, scene, camera, maxDepth - 1));
@@ -547,8 +542,13 @@ int main()
     std::string filepath;
     std::fstream scenefile;
     std::vector<std::string> filecontent;
+    // std::cout << "Enter Scene (e.g. scene2d.test)" << std::endl;
+    // std::cin >> filepath;
+    // std::cout << std::endl << filepath << std::endl;
 
+    // testing filepath comment out before submission
     filepath = "checkboard.test";
+    // filepath = "scene2b.test";
     scenefile.open(filepath, std::ios::in);
     if (scenefile)
     {
