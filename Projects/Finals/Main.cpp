@@ -438,7 +438,7 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
         if (lightW == 1.0f)
         {
             // ambient lighting
-            ambient = scene.lights[i].ambient * didRayHit.obj->material.diffuse;
+            ambient = scene.lights[i].ambient * didRayHit.obj->material.ambient;
 
             // diffuse lighting
             glm::vec3 norm = didRayHit.intersectionNormal;
@@ -469,7 +469,6 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
             // diffuse lighting
             glm::vec3 norm = didRayHit.intersectionNormal;
             lightDirection = glm::normalize(-1.0f * glm::vec3(scene.lights[i].position));
-            // lightDirection = glm::normalize(-1.0f * (glm::vec3(scene.lights[i].position) - didRayHit.intersectionPoint));
             float diff = std::max(glm::dot(norm, lightDirection), zeroConst);
             diffuse = diff * (didRayHit.obj->material.diffuse * scene.lights[i].diffuse);
 
@@ -477,7 +476,6 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
             glm::vec3 viewDirection = glm::normalize(camera.position - didRayHit.intersectionPoint);
             glm::vec3 reflectDirection = glm::reflect(-lightDirection, norm);
             float spec = pow(std::max(glm::dot(viewDirection, reflectDirection), zeroConst), didRayHit.obj->material.shininess);
-            // float spec = pow(std::max(glm::dot(reflectDirection, viewDirection), zeroConst), didRayHit.obj->material.shininess);
             specular = scene.lights[i].specular * (spec * didRayHit.obj->material.specular);
         }
 
@@ -487,7 +485,7 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
 
         for (int j = 0; j < scene.objects.size(); j++)
         {
-            shadow.origin = didRayHit.intersectionPoint + (didRayHit.intersectionNormal * 0.01f); // Why is this 0.01f? is this the Bias?
+            shadow.origin = didRayHit.intersectionPoint + (didRayHit.intersectionNormal * 0.01f);
             float lightType = scene.lights[i].position.w;
 
             if (lightType == 0.0f)
@@ -513,8 +511,6 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
         }
         if (isShadow)
         {
-            // std::cout << "shadow" << std::endl;
-            // colorTemp = ambient;
             shadowVal = 1.0f;
         }
         else
@@ -531,59 +527,10 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
         }
 
         colorTemp = ambient + (1.0f - shadowVal) * (diffuse + specular);
-        // IntersectionInfo shadowInfo;
-        // shadowInfo = Raycast(shadow, scene);
-
-        // float pDistance = glm::length(glm::vec3(scene.lights[i].position) - didRayHit.intersectionPoint);
-        // float attenuation = 1.0f / (scene.lights[i].constant + (scene.lights[i].linear * pDistance) + scene.lights[i].quadratic * pow(pDistance, 2));
-
         colorCombinedTemp += colorTemp;
     }
 
-    /*
-    *
-    * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    * SHADOWS IDK HOW TO PASOK THIS PERO THIS THE CODE
-    * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    *
-    *
-
-    */
-
-    /*
-    REFLECTION
-    // Kr = Ns / 128
-    Ray reflection;
-    reflection.origin = didRayHit.intersectionPoint + 0.001f; //(why is there 0.01f again?);
-    reflection.direction = glm::reflect(didRayHit.incomingRay.direction, didRayHit.intersectionNormal);
-    float kr = didRayHit.obj->material.shininess / 128.0f;
-    finalColor += kr * RayTrace(reflection, currentScene, camera, maxDepth-1);
-    */
-    // if (maxDepth > 0)
-    // {
-    //     Ray reflection;
-    //     reflection.origin = didRayHit.intersectionPoint + 0.001f; //(why is there 0.01f again?);
-    //     reflection.direction = glm::reflect(didRayHit.incomingRay.direction, didRayHit.intersectionNormal);
-    //     float kr = didRayHit.obj->material.shininess / 128;
-    //     colorCombinedTemp += (kr * RayTrace(reflection, scene, camera, maxDepth - 1));
-    // }
-    // if (didRayHit.obj == nullptr)
-    // {
-    //     color = glm::vec3(0.0f);
-    // }
-    // else
-    // {
-    //     // ambient /= countRay;
-    //     // diffuse /= countRay;
-    //     // specular /= countRay;
-    //     //  ambient /= scene.lights.size();
-    //     //  diffuse /= scene.lights.size();
-    //     //  specular /= scene.lights.size();
-    //     // color = ambient + diffuse + specular;
-
-    // }
     color = colorCombinedTemp;
-    // color = colorCombinedTemp + reflectColor;
     return color;
 }
 
@@ -600,9 +547,6 @@ int main()
     std::string filepath;
     std::fstream scenefile;
     std::vector<std::string> filecontent;
-    // std::cout << "HELLO" << std::endl;
-    // std::cin >> filepath;
-    // std::cout << std::endl << filepath << std::endl;
 
     filepath = "checkboard.test";
     scenefile.open(filepath, std::ios::in);
