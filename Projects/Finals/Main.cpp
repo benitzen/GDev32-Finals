@@ -535,7 +535,26 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
 int main()
 {
     int bounceY[16] = {8, 7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8};
-    for (int bounceIndex = 0; bounceIndex < 16; bounceIndex++)
+    float pyramidSide1BX[16] = {-9,-8.90625, -8.8125,-8.71875, -8.625, -8.53125, -8.4375, -8.34375, -8.25, -8.15625, -8.0625, -7.96875, -7.875,-7.78125,-7.6875,-7.59375};
+    float pyramidSide1BZ[16] = {4.5, 4.40625, 4.3125, 4.21875, 4.125, 4.03125, 3.9375, 3.84375, 3.75, 3.65625, 3.5625, 3.46875, 3.375, 3.28125, 3.1875, 3.09375};
+    float pyramidSide1CX[16] = {-7.5, -7.40625, -7.3125, -7.21875, -7.125, -7.03125, -6.9375, -6.84375, -6.75, -6.65625, -6.5625, -6.46875, -6.375, -6.28125, -6.1875, -6.09375 };
+    float pyramidSide1CZ[16] = {3, 3.09375, 3.1875, 3.28125, 3.375, 3.46875, 3.5625, 3.65625, 3.75, 3.84375, 3.9375, 4.03125, 4.125, 4.21875, 4.3125, 4.40625 };
+
+    float pyramidSide2BX[16] = {-7.5, -7.40625, -7.3125, -7.21875, -7.125, -7.03125, -6.9375, -6.84375, -6.75, -6.65625, -6.5625, -6.46875, -6.375, -6.28125, -6.1875, -6.09375 };
+    float pyramidSide2BZ[16] = {3, 3.09375, 3.1875, 3.28125, 3.375, 3.46875, 3.5625, 3.65625, 3.75, 3.84375, 3.9375, 4.03125, 4.125, 4.21875, 4.3125, 4.40625 };
+    float pyramidSide2CX[16] = {-6, -6.09375, -6.1875, -6.28125, -6.375, -6.46875, -6.5625, -6.65625, -6.75, -6.84375, -6.9375, -7.03125, -7.125, -7.21875, -7.3125, -7.40625};
+    float pyramidSide2CZ[16] = {4.5, 4.59375, 4.6875, 4.78125, 4.875, 4.96875,5.0625,5.15625,5.25, 5.34375,5.4375,5.53125,5.625,5.71875, 5.8125,5.90625};
+
+    float pyramidSide3BX[16] = {-6, -6.09375, -6.1875, -6.28125, -6.375, -6.46875, -6.5625, -6.65625, -6.75, -6.84375, -6.9375, -7.03125, -7.125, -7.21875, -7.3125, -7.40625 };
+    float pyramidSide3BZ[16] = { 4.5, 4.59375, 4.6875, 4.78125, 4.875, 4.96875,5.0625,5.15625,5.25, 5.34375,5.4375,5.53125,5.625,5.71875, 5.8125,5.90625 };
+    float pyramidSide3CX[16] = {-7.5,-7.59375, -7.6875, -7.78125, -7.875, -7.96875, -8.0625, -8.15625, -8.25, -8.34375, -8.4375, -8.53125, -8.625,-8.71875, -8.8125,-8.90625 };
+    float pyramidSide3CZ[16] = { 6, 5.90625,  5.8125, 5.71875,  5.625, 5.53125,  5.4375, 5.34375, 5.25, 5.15625, 5.0625, 4.96875, 4.875, 4.78125,4.6875, 4.59375 };
+
+    float pyramidSide4BX[16] = {-7.5,-7.59375, -7.6875, -7.78125, -7.875, -7.96875, -8.0625, -8.15625, -8.25, -8.34375, -8.4375, -8.53125, -8.625,-8.71875, -8.8125,-8.90625 };;
+    float pyramidSide4BZ[16] = { 6, 5.90625,  5.8125, 5.71875,  5.625, 5.53125,  5.4375, 5.34375, 5.25, 5.15625, 5.0625, 4.96875, 4.875, 4.78125,4.6875, 4.59375};
+    float pyramidSide4CX[16] = {-9,-8.90625, -8.8125,-8.71875, -8.625, -8.53125, -8.4375, -8.34375, -8.25, -8.15625, -8.0625, -7.96875, -7.875,-7.78125,-7.6875,-7.59375 };
+    float pyramidSide4CZ[16] = {4.5, 4.40625, 4.3125, 4.21875, 4.125, 4.03125, 3.9375, 3.84375, 3.75, 3.65625, 3.5625, 3.46875, 3.375, 3.28125, 3.1875, 3.09375 };
+    for (int animationIndex = 0; animationIndex < 16; animationIndex++)
     {
 
         Scene scene;
@@ -628,7 +647,7 @@ int main()
                 sphere = new Sphere();
                 sphere->center = glm::vec3(
                     std::stof(filecontent[startNum + 1]),
-                    bounceY[bounceIndex],
+                    bounceY[animationIndex],
                     std::stof(filecontent[startNum + 3]));
                 sphere->radius = std::stof(filecontent[startNum + 4]);
                 sphere->material.ambient = glm::vec3(
@@ -665,6 +684,134 @@ int main()
                     std::stof(filecontent[startNum + 7]),
                     std::stof(filecontent[startNum + 8]),
                     std::stof(filecontent[startNum + 9]));
+                triangle->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 10]),
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]));
+                triangle->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 13]),
+                    std::stof(filecontent[startNum + 14]),
+                    std::stof(filecontent[startNum + 15]));
+                triangle->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 16]),
+                    std::stof(filecontent[startNum + 17]),
+                    std::stof(filecontent[startNum + 18]));
+                triangle->material.shininess = std::stof(filecontent[startNum + 19]);
+                startNum += 20;
+                scene.objects.push_back(triangle);
+            }
+            if (filecontent[startNum] == "triSide1")
+            {
+                // Triangle Initialization
+                triangle = new Triangle();
+                triangle->A = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                triangle->B = glm::vec3(
+                    pyramidSide1BX[animationIndex],
+                    std::stof(filecontent[startNum + 5]),
+                    pyramidSide1BZ[animationIndex]);
+                triangle->C = glm::vec3(
+                    pyramidSide1CX[animationIndex],
+                    std::stof(filecontent[startNum + 8]),
+                    pyramidSide1CZ[animationIndex]);
+                triangle->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 10]),
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]));
+                triangle->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 13]),
+                    std::stof(filecontent[startNum + 14]),
+                    std::stof(filecontent[startNum + 15]));
+                triangle->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 16]),
+                    std::stof(filecontent[startNum + 17]),
+                    std::stof(filecontent[startNum + 18]));
+                triangle->material.shininess = std::stof(filecontent[startNum + 19]);
+                startNum += 20;
+                scene.objects.push_back(triangle);
+            }
+            if (filecontent[startNum] == "triSide2")
+            {
+                // Triangle Initialization
+                triangle = new Triangle();
+                triangle->A = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                triangle->B = glm::vec3(
+                    pyramidSide2BX[animationIndex],
+                    std::stof(filecontent[startNum + 5]),
+                    pyramidSide2BZ[animationIndex]);
+                triangle->C = glm::vec3(
+                    pyramidSide2CX[animationIndex],
+                    std::stof(filecontent[startNum + 8]),
+                    pyramidSide2CZ[animationIndex]);
+                triangle->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 10]),
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]));
+                triangle->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 13]),
+                    std::stof(filecontent[startNum + 14]),
+                    std::stof(filecontent[startNum + 15]));
+                triangle->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 16]),
+                    std::stof(filecontent[startNum + 17]),
+                    std::stof(filecontent[startNum + 18]));
+                triangle->material.shininess = std::stof(filecontent[startNum + 19]);
+                startNum += 20;
+                scene.objects.push_back(triangle);
+            }
+            if (filecontent[startNum] == "triSide3")
+            {
+                // Triangle Initialization
+                triangle = new Triangle();
+                triangle->A = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                triangle->B = glm::vec3(
+                    pyramidSide3BX[animationIndex],
+                    std::stof(filecontent[startNum + 5]),
+                    pyramidSide3BZ[animationIndex]);
+                triangle->C = glm::vec3(
+                    pyramidSide3CX[animationIndex],
+                    std::stof(filecontent[startNum + 8]),
+                    pyramidSide3CZ[animationIndex]);
+                triangle->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 10]),
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]));
+                triangle->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 13]),
+                    std::stof(filecontent[startNum + 14]),
+                    std::stof(filecontent[startNum + 15]));
+                triangle->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 16]),
+                    std::stof(filecontent[startNum + 17]),
+                    std::stof(filecontent[startNum + 18]));
+                triangle->material.shininess = std::stof(filecontent[startNum + 19]);
+                startNum += 20;
+                scene.objects.push_back(triangle);
+            }
+            if (filecontent[startNum] == "triSide4")
+            {
+                // Triangle Initialization
+                triangle = new Triangle();
+                triangle->A = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                triangle->B = glm::vec3(
+                    pyramidSide4BX[animationIndex],
+                    std::stof(filecontent[startNum + 5]),
+                    pyramidSide4BZ[animationIndex]);
+                triangle->C = glm::vec3(
+                    pyramidSide4CX[animationIndex],
+                    std::stof(filecontent[startNum + 8]),
+                    pyramidSide4CZ[animationIndex]);
                 triangle->material.ambient = glm::vec3(
                     std::stof(filecontent[startNum + 10]),
                     std::stof(filecontent[startNum + 11]),
@@ -731,7 +878,7 @@ int main()
         }
         std::cout << std::endl;
 
-        std::string imageFileName = "frame" + std::to_string(bounceIndex) + ".png"; // You might need to make this a full path if you are on Mac
+        std::string imageFileName = "frame" + std::to_string(animationIndex) + ".png"; // You might need to make this a full path if you are on Mac
         stbi_write_png(imageFileName.c_str(), image.width, image.height, 3, image.data.data(), 0);
 
         for (size_t i = 0; i < scene.objects.size(); ++i)
