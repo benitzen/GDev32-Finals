@@ -534,180 +534,210 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
  */
 int main()
 {
-    Scene scene;
-    Camera camera;
-    Sphere *sphere;
-    Triangle *triangle;
-
-    std::string filepath;
-    std::fstream scenefile;
-    std::vector<std::string> filecontent;
-    // std::cout << "Enter Scene (e.g. scene2d.test)" << std::endl;
-    // std::cin >> filepath;
-    // std::cout << std::endl << filepath << std::endl;
-
-    // testing filepath comment out before submission
-    filepath = "checkboard.test";
-    // filepath = "scene2b.test";
-    scenefile.open(filepath, std::ios::in);
-    if (scenefile)
+    int bounceY[16] = {8, 7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8};
+    for (int bounceIndex = 0; bounceIndex < 16; bounceIndex++)
     {
-        std::cout << "File exist" << std::endl;
-        // while (!scenefile.eof())
-        while (!scenefile.eof())
+
+        Scene scene;
+        Camera camera;
+        Sphere *sphere;
+        Triangle *triangle;
+
+        std::string filepath;
+        std::fstream scenefile;
+        std::vector<std::string> filecontent;
+        // std::cout << "Enter Scene (e.g. scene2d.test)" << std::endl;
+        // std::cin >> filepath;
+        // std::cout << std::endl << filepath << std::endl;
+
+        // testing filepath comment out before submission
+        filepath = "checkboard.test";
+        // filepath = "scene2b.test";
+        scenefile.open(filepath, std::ios::in);
+        if (scenefile)
         {
-            char foo[16];
-            scenefile >> foo;
-            filecontent.push_back(foo);
-        }
-        // filecontent.pop_back();
-        scenefile.close();
-    }
-
-    for (int i = 0; i < filecontent.size(); i++)
-    {
-        std::cout << "File index " << i << ": " << filecontent[i] << std::endl;
-    }
-
-    // Camera Initialization
-    camera.imageWidth = std::stoi(filecontent[0]);
-    camera.imageHeight = std::stoi(filecontent[1]);
-    camera.position = glm::vec3(
-        std::stof(filecontent[2]),
-        std::stof(filecontent[3]),
-        std::stof(filecontent[4]));
-    camera.lookTarget = glm::vec3(
-        std::stof(filecontent[5]),
-        std::stof(filecontent[6]),
-        std::stof(filecontent[7]));
-    camera.globalUp = glm::vec3(
-        std::stof(filecontent[8]),
-        std::stof(filecontent[9]),
-        std::stof(filecontent[10]));
-    camera.fovY = std::stof(filecontent[11]);
-    camera.focalLength = std::stof(filecontent[12]);
-    int maxDepth = std::stoi(filecontent[13]);
-    int numObj = std::stoi(filecontent[14]);
-
-    int startNum = 15;
-    for (int i = 0; i < numObj; i++)
-    {
-        if (filecontent[startNum] == "sphere")
-        {
-            // Sphere Initialization
-            sphere = new Sphere();
-            sphere->center = glm::vec3(
-                std::stof(filecontent[startNum + 1]),
-                std::stof(filecontent[startNum + 2]),
-                std::stof(filecontent[startNum + 3]));
-            sphere->radius = std::stof(filecontent[startNum + 4]);
-            sphere->material.ambient = glm::vec3(
-                std::stof(filecontent[startNum + 5]),
-                std::stof(filecontent[startNum + 6]),
-                std::stof(filecontent[startNum + 7]));
-            sphere->material.diffuse = glm::vec3(
-                std::stof(filecontent[startNum + 8]),
-                std::stof(filecontent[startNum + 9]),
-                std::stof(filecontent[startNum + 10]));
-            sphere->material.specular = glm::vec3(
-                std::stof(filecontent[startNum + 11]),
-                std::stof(filecontent[startNum + 12]),
-                std::stof(filecontent[startNum + 13]));
-            sphere->material.shininess = std::stof(filecontent[startNum + 14]);
-
-            startNum += 15;
-            scene.objects.push_back(sphere);
+            std::cout << "File exist" << std::endl;
+            // while (!scenefile.eof())
+            while (!scenefile.eof())
+            {
+                char foo[16];
+                scenefile >> foo;
+                filecontent.push_back(foo);
+            }
+            // filecontent.pop_back();
+            scenefile.close();
         }
 
-        if (filecontent[startNum] == "tri")
+        for (int i = 0; i < filecontent.size(); i++)
         {
-            // Triangle Initialization
-            triangle = new Triangle();
-            triangle->A = glm::vec3(
-                std::stof(filecontent[startNum + 1]),
-                std::stof(filecontent[startNum + 2]),
-                std::stof(filecontent[startNum + 3]));
-            triangle->B = glm::vec3(
-                std::stof(filecontent[startNum + 4]),
-                std::stof(filecontent[startNum + 5]),
-                std::stof(filecontent[startNum + 6]));
-            triangle->C = glm::vec3(
-                std::stof(filecontent[startNum + 7]),
-                std::stof(filecontent[startNum + 8]),
-                std::stof(filecontent[startNum + 9]));
-            triangle->material.ambient = glm::vec3(
-                std::stof(filecontent[startNum + 10]),
-                std::stof(filecontent[startNum + 11]),
-                std::stof(filecontent[startNum + 12]));
-            triangle->material.diffuse = glm::vec3(
-                std::stof(filecontent[startNum + 13]),
-                std::stof(filecontent[startNum + 14]),
-                std::stof(filecontent[startNum + 15]));
-            triangle->material.specular = glm::vec3(
-                std::stof(filecontent[startNum + 16]),
-                std::stof(filecontent[startNum + 17]),
-                std::stof(filecontent[startNum + 18]));
-            triangle->material.shininess = std::stof(filecontent[startNum + 19]);
-            startNum += 20;
-            scene.objects.push_back(triangle);
-        }
-    }
-
-    // Light Initialization
-    int lightNum = std::stoi(filecontent[startNum]);
-    std::cout << "Start num: " << startNum << std::endl;
-    std::cout << "Light w: " << std::stof(filecontent[startNum + 4]) << std::endl;
-    for (int i = 0; i < lightNum; i++)
-    {
-        Light light;
-
-        light.position = glm::vec4(
-            std::stof(filecontent[startNum + 1]),  // x
-            std::stof(filecontent[startNum + 2]),  // y
-            std::stof(filecontent[startNum + 3]),  // z
-            std::stof(filecontent[startNum + 4])); // w
-        light.ambient = glm::vec3(
-            std::stof(filecontent[startNum + 5]),  // r
-            std::stof(filecontent[startNum + 6]),  // g
-            std::stof(filecontent[startNum + 7])); // b
-        light.diffuse = glm::vec3(
-            std::stof(filecontent[startNum + 8]),   // r
-            std::stof(filecontent[startNum + 9]),   // g
-            std::stof(filecontent[startNum + 10])); // b
-        light.specular = glm::vec3(
-            std::stof(filecontent[startNum + 11]),  // r
-            std::stof(filecontent[startNum + 12]),  // g
-            std::stof(filecontent[startNum + 13])); // b
-        light.constant = std::stof(filecontent[startNum + 14]);
-        light.linear = std::stof(filecontent[startNum + 15]);
-        light.quadratic = std::stof(filecontent[startNum + 16]);
-
-        startNum += 16;
-        scene.lights.push_back(light);
-    }
-
-    Image image(camera.imageWidth, camera.imageHeight);
-    for (int y = 0; y < image.height; ++y)
-    {
-        for (int x = 0; x < image.width; ++x)
-        {
-            Ray ray = GetRayThruPixel(camera, x, image.height - y - 1);
-
-            glm::vec3 color = RayTrace(ray, scene, camera, maxDepth);
-            image.SetColor(x, y, color);
+            std::cout << "File index " << i << ": " << filecontent[i] << std::endl;
         }
 
-        std::cout << "Row: " << std::setfill(' ') << std::setw(4) << (y + 1) << " / " << std::setfill(' ') << std::setw(4) << image.height << "\r" << std::flush;
+        // Camera Initialization
+        camera.imageWidth = std::stoi(filecontent[0]);
+        camera.imageHeight = std::stoi(filecontent[1]);
+        camera.position = glm::vec3(
+            std::stof(filecontent[2]),
+            std::stof(filecontent[3]),
+            std::stof(filecontent[4]));
+        camera.lookTarget = glm::vec3(
+            std::stof(filecontent[5]),
+            std::stof(filecontent[6]),
+            std::stof(filecontent[7]));
+        camera.globalUp = glm::vec3(
+            std::stof(filecontent[8]),
+            std::stof(filecontent[9]),
+            std::stof(filecontent[10]));
+        camera.fovY = std::stof(filecontent[11]);
+        camera.focalLength = std::stof(filecontent[12]);
+        int maxDepth = std::stoi(filecontent[13]);
+        int numObj = std::stoi(filecontent[14]);
+
+        int startNum = 15;
+        for (int i = 0; i < numObj; i++)
+        {
+            if (filecontent[startNum] == "sphere")
+            {
+                // Sphere Initialization
+                sphere = new Sphere();
+                sphere->center = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                sphere->radius = std::stof(filecontent[startNum + 4]);
+                sphere->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 5]),
+                    std::stof(filecontent[startNum + 6]),
+                    std::stof(filecontent[startNum + 7]));
+                sphere->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 8]),
+                    std::stof(filecontent[startNum + 9]),
+                    std::stof(filecontent[startNum + 10]));
+                sphere->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]),
+                    std::stof(filecontent[startNum + 13]));
+                sphere->material.shininess = std::stof(filecontent[startNum + 14]);
+
+                startNum += 15;
+                scene.objects.push_back(sphere);
+            }
+            if (filecontent[startNum] == "sphereBounce")
+            {
+                // Sphere Initialization
+                sphere = new Sphere();
+                sphere->center = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    bounceY[bounceIndex],
+                    std::stof(filecontent[startNum + 3]));
+                sphere->radius = std::stof(filecontent[startNum + 4]);
+                sphere->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 5]),
+                    std::stof(filecontent[startNum + 6]),
+                    std::stof(filecontent[startNum + 7]));
+                sphere->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 8]),
+                    std::stof(filecontent[startNum + 9]),
+                    std::stof(filecontent[startNum + 10]));
+                sphere->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]),
+                    std::stof(filecontent[startNum + 13]));
+                sphere->material.shininess = std::stof(filecontent[startNum + 14]);
+
+                startNum += 15;
+                scene.objects.push_back(sphere);
+            }
+
+            if (filecontent[startNum] == "tri")
+            {
+                // Triangle Initialization
+                triangle = new Triangle();
+                triangle->A = glm::vec3(
+                    std::stof(filecontent[startNum + 1]),
+                    std::stof(filecontent[startNum + 2]),
+                    std::stof(filecontent[startNum + 3]));
+                triangle->B = glm::vec3(
+                    std::stof(filecontent[startNum + 4]),
+                    std::stof(filecontent[startNum + 5]),
+                    std::stof(filecontent[startNum + 6]));
+                triangle->C = glm::vec3(
+                    std::stof(filecontent[startNum + 7]),
+                    std::stof(filecontent[startNum + 8]),
+                    std::stof(filecontent[startNum + 9]));
+                triangle->material.ambient = glm::vec3(
+                    std::stof(filecontent[startNum + 10]),
+                    std::stof(filecontent[startNum + 11]),
+                    std::stof(filecontent[startNum + 12]));
+                triangle->material.diffuse = glm::vec3(
+                    std::stof(filecontent[startNum + 13]),
+                    std::stof(filecontent[startNum + 14]),
+                    std::stof(filecontent[startNum + 15]));
+                triangle->material.specular = glm::vec3(
+                    std::stof(filecontent[startNum + 16]),
+                    std::stof(filecontent[startNum + 17]),
+                    std::stof(filecontent[startNum + 18]));
+                triangle->material.shininess = std::stof(filecontent[startNum + 19]);
+                startNum += 20;
+                scene.objects.push_back(triangle);
+            }
+        }
+
+        // Light Initialization
+        int lightNum = std::stoi(filecontent[startNum]);
+        std::cout << "Start num: " << startNum << std::endl;
+        std::cout << "Light w: " << std::stof(filecontent[startNum + 4]) << std::endl;
+        for (int i = 0; i < lightNum; i++)
+        {
+            Light light;
+
+            light.position = glm::vec4(
+                std::stof(filecontent[startNum + 1]),  // x
+                std::stof(filecontent[startNum + 2]),  // y
+                std::stof(filecontent[startNum + 3]),  // z
+                std::stof(filecontent[startNum + 4])); // w
+            light.ambient = glm::vec3(
+                std::stof(filecontent[startNum + 5]),  // r
+                std::stof(filecontent[startNum + 6]),  // g
+                std::stof(filecontent[startNum + 7])); // b
+            light.diffuse = glm::vec3(
+                std::stof(filecontent[startNum + 8]),   // r
+                std::stof(filecontent[startNum + 9]),   // g
+                std::stof(filecontent[startNum + 10])); // b
+            light.specular = glm::vec3(
+                std::stof(filecontent[startNum + 11]),  // r
+                std::stof(filecontent[startNum + 12]),  // g
+                std::stof(filecontent[startNum + 13])); // b
+            light.constant = std::stof(filecontent[startNum + 14]);
+            light.linear = std::stof(filecontent[startNum + 15]);
+            light.quadratic = std::stof(filecontent[startNum + 16]);
+
+            startNum += 16;
+            scene.lights.push_back(light);
+        }
+
+        Image image(camera.imageWidth, camera.imageHeight);
+        for (int y = 0; y < image.height; ++y)
+        {
+            for (int x = 0; x < image.width; ++x)
+            {
+                Ray ray = GetRayThruPixel(camera, x, image.height - y - 1);
+
+                glm::vec3 color = RayTrace(ray, scene, camera, maxDepth);
+                image.SetColor(x, y, color);
+            }
+
+            std::cout << "Row: " << std::setfill(' ') << std::setw(4) << (y + 1) << " / " << std::setfill(' ') << std::setw(4) << image.height << "\r" << std::flush;
+        }
+        std::cout << std::endl;
+
+        std::string imageFileName = "frame" + std::to_string(bounceIndex) + ".png"; // You might need to make this a full path if you are on Mac
+        stbi_write_png(imageFileName.c_str(), image.width, image.height, 3, image.data.data(), 0);
+
+        for (size_t i = 0; i < scene.objects.size(); ++i)
+        {
+            delete scene.objects[i];
+        }
     }
-    std::cout << std::endl;
-
-    std::string imageFileName = "scene.png"; // You might need to make this a full path if you are on Mac
-    stbi_write_png(imageFileName.c_str(), image.width, image.height, 3, image.data.data(), 0);
-
-    for (size_t i = 0; i < scene.objects.size(); ++i)
-    {
-        delete scene.objects[i];
-    }
-
     return 0;
 }
