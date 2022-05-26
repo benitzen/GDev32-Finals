@@ -109,10 +109,15 @@ struct Sphere : public SceneObject
             {
                 t = rootTwo;
             }
+            else if (root < 0 && rootTwo < 0) // two negative roots
+            {
+                return -1.0f;
+            }
         }
 
         outIntersectionPoint = glm::vec3(p + (t * d));
-        outIntersectionNormal = glm::normalize(outIntersectionPoint);
+        // Should be X-C
+        outIntersectionNormal = glm::normalize(outIntersectionPoint - center);
         //
         // In case there is an intersection, place the intersection point and intersection normal
         // that you calculated to the outIntersectionPoint and outIntersectionNormal variables.
@@ -186,7 +191,9 @@ struct Triangle : public SceneObject
         }
 
         glm::vec3 intersectionPoint = A + (u * (B - A)) + (v * (C - A));
-        glm::vec3 normalizedIntersectionPoint = glm::normalize(n);
+        glm::vec3 AB = glm::normalize(B - A);
+        glm::vec3 CA = glm::normalize(C - A);
+        glm::vec3 normalizedIntersectionPoint = glm::normalize(glm::cross(AB, CA));
 
         outIntersectionPoint = intersectionPoint;
         outIntersectionNormal = normalizedIntersectionPoint;
