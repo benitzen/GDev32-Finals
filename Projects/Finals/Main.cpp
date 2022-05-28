@@ -191,9 +191,10 @@ struct Triangle : public SceneObject
         }
 
         glm::vec3 intersectionPoint = A + (u * (B - A)) + (v * (C - A));
-        glm::vec3 AB = glm::normalize(B - A);
-        glm::vec3 CA = glm::normalize(C - A);
-        glm::vec3 normalizedIntersectionPoint = glm::normalize(glm::cross(AB, CA));
+        //glm::vec3 AB = glm::normalize(B - A);
+        //glm::vec3 CA = glm::normalize(C - A);
+        //glm::vec3 normalizedIntersectionPoint = glm::normalize(glm::cross(AB, CA));
+        glm::vec3 normalizedIntersectionPoint = glm::normalize(n);
 
         outIntersectionPoint = intersectionPoint;
         outIntersectionNormal = normalizedIntersectionPoint;
@@ -418,6 +419,7 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
     glm::vec3 lightDirection(0.0f);
     glm::vec3 colorTemp(0.0f);
     glm::vec3 colorCombinedTemp(0.0f);
+    float lightDistance = 0.0f;
     float zeroConst = 0.0f;
 
     for (int i = 0; i < scene.lights.size(); i++)
@@ -439,12 +441,15 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
 
             // diffuse lighting
             glm::vec3 norm = didRayHit.intersectionNormal;
+            //lightDirection = glm::length(glm::vec3(scene.lights[i].position) - didRayHit.intersectionPoint);
+            lightDistance = glm::length(glm::vec3(scene.lights[i].position) - didRayHit.intersectionPoint);
             lightDirection = glm::normalize(glm::vec3(scene.lights[i].position) - didRayHit.intersectionPoint);
             float diff = std::max(glm::dot(norm, lightDirection), zeroConst);
             diffuse = scene.lights[i].diffuse * (diff * didRayHit.obj->material.diffuse);
 
             // specular lighting
             glm::vec3 viewDirection = glm::normalize(camera.position - didRayHit.intersectionPoint);
+            lightDirection = glm::normalize(lightDirection);
             glm::vec3 reflectDirection = glm::reflect(-lightDirection, norm);
             float spec = pow(std::max(glm::dot(viewDirection, reflectDirection), zeroConst), didRayHit.obj->material.shininess);
             specular = scene.lights[i].specular * (spec * didRayHit.obj->material.specular);
@@ -505,7 +510,7 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
             // directional light. Also, you are getting the length of lightDirection, which if you
             // notice is already normalized. Hence, it will always have a length of 1.
             // if (glm::length(lightDirection) > rayDist && rayDist > 0)
-            if (rayDist < 1 && rayDist > 0)
+            if (lightDistance > rayDist && rayDist > 0)
             {
                 isShadow = true;
             }
