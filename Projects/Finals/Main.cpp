@@ -489,31 +489,41 @@ glm::vec3 RayTrace(const Ray &ray, const Scene &scene, const Camera &camera, int
         {
             shadow.origin = didRayHit.intersectionPoint + (didRayHit.intersectionNormal * 0.01f);
             float lightW = scene.lights[i].position.w;
+            glm::vec3 outIntersectionPoint(0.0f);
+            glm::vec3 outIntersectionNormal(0.0f);
+            float rayDist = scene.objects[j]->Intersect(shadow, outIntersectionPoint, outIntersectionNormal);
+
 
             if (lightW == 0.0f)
             {
                 /* code */
                 shadow.direction = glm::normalize(-glm::vec3(scene.lights[i].position));
+
+                if (rayDist > 0)
+                {
+                    isShadow = true;
+                }
+                
             }
             else if (lightW == 1.0f)
             {
                 /* code */
                 shadow.direction = glm::normalize(glm::vec3(scene.lights[i].position) - shadow.origin);
+
+                if (lightDistance > rayDist && rayDist > 0)
+                {
+                    isShadow = true;
+                }
             }
 
-            glm::vec3 outIntersectionPoint(0.0f);
-            glm::vec3 outIntersectionNormal(0.0f);
+            
 
-            float rayDist = scene.objects[j]->Intersect(shadow, outIntersectionPoint, outIntersectionNormal);
             // In your shadow calculation, remember that directional lights do not have a position,
             // so you cannot really measure the distance between the intersection point and the
             // directional light. Also, you are getting the length of lightDirection, which if you
             // notice is already normalized. Hence, it will always have a length of 1.
             // if (glm::length(lightDirection) > rayDist && rayDist > 0)
-            if (lightDistance > rayDist && rayDist > 0)
-            {
-                isShadow = true;
-            }
+            
         }
         if (isShadow)
         {
